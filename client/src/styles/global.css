@@ -300,6 +300,33 @@ form {
   color: var(--color-text-muted);
 }
 
+.player-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-kick {
+  background: transparent;
+  border: 1px solid #ff4444;
+  color: #ff4444;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-kick:hover {
+  background: #ff4444;
+  color: white;
+}
+
 /* Host Config */
 .host-config {
   width: 100%;

@@ -37,6 +37,10 @@ export default function LobbyPage() {
     dispatch({ type: 'RESET_MEDIA_READY_ALL' });
   });
 
+  useSocketEvent('room:kicked', () => {
+    navigate('/');
+  });
+
   useSocketEvent('lobby:config-updated', ({ config }) => {
     dispatch({ type: 'UPDATE_CONFIG', config });
   });
@@ -81,13 +85,18 @@ export default function LobbyPage() {
     socket.emit('host:start-game');
   };
 
+  const handleKick = (playerId: string) => {
+    const socket = getSocket();
+    socket.emit('host:kick-player', { playerId });
+  };
+
   const allReady = state.players.length >= 2 && state.players.every((p) => p.isMediaReady);
 
   return (
     <div className="page lobby-page">
       <RoomCodeDisplay code={code || ''} />
 
-      <PlayerList players={state.players} currentPlayerId={state.playerId} />
+      <PlayerList players={state.players} currentPlayerId={state.playerId} isHost={state.isHost} onKick={handleKick} />
 
       <MediaPicker
         key={state.gameConfig.mediaScope}

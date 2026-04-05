@@ -18,6 +18,10 @@ export default function JoinPage() {
     socket.on('room:created', ({ roomCode, playerId, config }) => {
       dispatch({ type: 'SET_PLAYER_INFO', playerId, displayName, isHost: true });
       dispatch({ type: 'SET_ROOM_CODE', roomCode });
+      dispatch({
+        type: 'SET_PLAYERS',
+        players: [{ id: playerId, displayName, isHost: true, isMediaReady: false, mediaCount: 0 }],
+      });
       dispatch({ type: 'UPDATE_CONFIG', config });
       dispatch({ type: 'SET_PHASE', phase: 'lobby' });
       navigate(`/lobby/${roomCode}`);

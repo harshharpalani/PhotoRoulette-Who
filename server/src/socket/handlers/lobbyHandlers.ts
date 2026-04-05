@@ -34,6 +34,32 @@ export function registerLobbyHandlers(io: TypedServer, socket: TypedSocket) {
     io.to(room.code).emit('lobby:config-updated', { config: room.config });
   });
 
+  socket.on('host:kick-player', ({ playerId }) => {
+    const room = roomManager.getRoomBySocket(socket.id);
+    if (!room || room.hostSocketId !== socket.id) return;
+    if (playerId === socket.id) return; // Can't kick yourself
+
+    const targetPlayer = room.players.get(playerId);
+    if (!targetPlayer) return;
+
+    logger.info(`Host kicked ${targetPlayer.displayName} from room ${room.code}`);
+
+    // Notify the kicked player
+    io.to(playerId).emit('room:kicked');
+
+    // Remove from room
+    roomManager.leaveRoom(playerId);
+
+    // Make the kicked socket leave the Socket.IO room
+    const targetSocket = io.sockets.sockets.get(playerId);
+    if (targetSocket) {
+      targetSocket.leave(room.code);
+    }
+
+    // Notify remaining players
+    io.to(room.code).emit('room:player-left', { playerId });
+  });
+
   socket.on('host:start-game', () => {
     const room = roomManager.getRoomBySocket(socket.id);
     if (!room || room.hostSocketId !== socket.id) return;

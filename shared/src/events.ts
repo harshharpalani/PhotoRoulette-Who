@@ -12,6 +12,7 @@ export interface ClientToServerEvents {
   'media:upload': (data: { roundIndex: number }, buffer: ArrayBuffer) => void;
   'guess:submit': (data: { guessedPlayerId: string; clientTimestamp: number }) => void;
   'vote:end-early': () => void;
+  'host:kick-player': (data: { playerId: string }) => void;
   'timing:pong': (data: { clientReceiveTime: number; serverSendTime: number }) => void;
 }
 
@@ -22,6 +23,7 @@ export interface ServerToClientEvents {
   'room:joined': (data: { roomCode: string; playerId: string; players: Player[]; config: GameConfig }) => void;
   'room:player-joined': (data: { player: Player }) => void;
   'room:player-left': (data: { playerId: string }) => void;
+  'room:kicked': () => void;
   'room:error': (data: { message: string }) => void;
   'lobby:player-ready': (data: { playerId: string }) => void;
   'lobby:media-reset': () => void;
