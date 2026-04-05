@@ -1,3 +1,5 @@
+import { MediaScope } from './types.js';
+
 export const ROOM_CODE_LENGTH = 5;
 export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 10;
@@ -13,9 +15,10 @@ export const MIN_REVEAL_DURATION = 5;
 export const MAX_REVEAL_DURATION = 10;
 export const DEFAULT_REVEAL_DURATION = 7;
 export const DEFAULT_NUM_ROUNDS = 10;
+export const DEFAULT_MEDIA_SCOPE = MediaScope.PHOTOS_ONLY;
 
 // Game
 export const COUNTDOWN_SECONDS = 3;
 export const ROUND_RESULT_DISPLAY_SECONDS = 5;
 export const ROOM_CLEANUP_DELAY_MS = 5 * 60 * 1000; // 5 minutes
-export const MEDIA_SELECTION_COUNT = 5; // number of photos/videos to randomly pick per selection
+export const MEDIA_SELECTION_COUNT = 16; // number of media items to randomly pick per selection

@@ -46,6 +46,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
   gap: 24px;
   max-width: 600px;
   margin: 0 auto;
@@ -197,6 +198,16 @@ form {
 
 .media-picker-actions .btn {
   flex: 1;
+}
+
+@media (max-width: 640px) {
+  .media-picker-actions {
+    flex-direction: column;
+  }
+
+  .media-picker-upload {
+    padding: 24px 16px;
+  }
 }
 
 .media-picker-done {

@@ -1,11 +1,12 @@
-interface MediaFile {
-  file: File;
+interface MediaPreviewFile {
   type: 'image' | 'video';
+  name: string;
   url: string;
+  previewKind: 'image' | 'video';
 }
 
 interface MediaPreviewProps {
-  files: MediaFile[];
+  files: MediaPreviewFile[];
 }
 
 export default function MediaPreview({ files }: MediaPreviewProps) {
@@ -13,8 +14,8 @@ export default function MediaPreview({ files }: MediaPreviewProps) {
     <div className="media-preview-grid">
       {files.map((file, i) => (
         <div key={i} className="media-preview-item">
-          {file.type === 'image' ? (
-            <img src={file.url} alt={`Selection ${i + 1}`} />
+          {file.previewKind === 'image' ? (
+            <img src={file.url} alt={file.name || `Selection ${i + 1}`} />
           ) : (
             <video src={file.url} muted playsInline />
           )}

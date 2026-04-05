@@ -15,17 +15,19 @@ export default function JoinPage() {
   useEffect(() => {
     const socket = connectSocket();
 
-    socket.on('room:created', ({ roomCode, playerId }) => {
+    socket.on('room:created', ({ roomCode, playerId, config }) => {
       dispatch({ type: 'SET_PLAYER_INFO', playerId, displayName, isHost: true });
       dispatch({ type: 'SET_ROOM_CODE', roomCode });
+      dispatch({ type: 'UPDATE_CONFIG', config });
       dispatch({ type: 'SET_PHASE', phase: 'lobby' });
       navigate(`/lobby/${roomCode}`);
     });
 
-    socket.on('room:joined', ({ roomCode, playerId, players }) => {
+    socket.on('room:joined', ({ roomCode, playerId, players, config }) => {
       dispatch({ type: 'SET_PLAYER_INFO', playerId, displayName, isHost: false });
       dispatch({ type: 'SET_ROOM_CODE', roomCode });
       dispatch({ type: 'SET_PLAYERS', players });
+      dispatch({ type: 'UPDATE_CONFIG', config });
       dispatch({ type: 'SET_PHASE', phase: 'lobby' });
       navigate(`/lobby/${roomCode}`);
     });

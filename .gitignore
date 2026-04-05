@@ -3,3 +3,10 @@ dist/
 .env
 *.tsbuildinfo
 .vite/
+
+# iOS / Xcode transient artifacts
+DerivedData/
+**/*.xcuserstate
+**/*.xcworkspace/xcuserdata/
+**/*.xcodeproj/xcuserdata/
+**/.DS_Store

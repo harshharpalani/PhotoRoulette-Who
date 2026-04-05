@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSocket } from '../socket.js';
 import { useGameState } from '../state/GameContext.js';
@@ -9,12 +9,12 @@ import PlayerList from '../components/PlayerList.js';
 import HostConfigPanel from '../components/HostConfigPanel.js';
 import RoomCodeDisplay from '../components/RoomCodeDisplay.js';
 import type { MediaManifestItem } from '@photoroulette/shared';
+import { getMediaUploadGetter, setMediaUploadGetter } from '../media/mediaUploadStore.js';
 
 export default function LobbyPage() {
   const { code } = useParams<{ code: string }>();
   const { state, dispatch } = useGameState();
   const navigate = useNavigate();
-  const getFileBufferRef = useRef<((index: number) => Promise<ArrayBuffer>) | null>(null);
 
   // Start timing sync
   useTimingSync();
@@ -32,6 +32,11 @@ export default function LobbyPage() {
     dispatch({ type: 'PLAYER_READY', playerId });
   });
 
+  useSocketEvent('lobby:media-reset', () => {
+    setMediaUploadGetter(null);
+    dispatch({ type: 'RESET_MEDIA_READY_ALL' });
+  });
+
   useSocketEvent('lobby:config-updated', ({ config }) => {
     dispatch({ type: 'UPDATE_CONFIG', config });
   });
@@ -44,10 +49,16 @@ export default function LobbyPage() {
 
   // Handle media request from server during game
   useSocketEvent('media:request', async ({ roundIndex }) => {
-    if (getFileBufferRef.current) {
-      const buffer = await getFileBufferRef.current(roundIndex);
-      const socket = getSocket();
-      socket.emit('media:upload', { roundIndex }, buffer);
+    const mediaUploadGetter = getMediaUploadGetter();
+    if (mediaUploadGetter) {
+      try {
+        const buffer = await mediaUploadGetter(roundIndex);
+        const socket = getSocket();
+        socket.emit('media:upload', { roundIndex }, buffer);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to access media';
+        window.alert(message);
+      }
     }
   });
 
@@ -55,7 +66,7 @@ export default function LobbyPage() {
     manifest: MediaManifestItem[],
     getFileBuffer: (index: number) => Promise<ArrayBuffer>,
   ) => {
-    getFileBufferRef.current = getFileBuffer;
+    setMediaUploadGetter(getFileBuffer);
     const socket = getSocket();
     socket.emit('player:media-ready', { mediaCount: manifest.length, manifest });
   };
@@ -78,7 +89,11 @@ export default function LobbyPage() {
 
       <PlayerList players={state.players} currentPlayerId={state.playerId} />
 
-      <MediaPicker onApproved={handleMediaApproved} />
+      <MediaPicker
+        key={state.gameConfig.mediaScope}
+        mediaScope={state.gameConfig.mediaScope}
+        onApproved={handleMediaApproved}
+      />
 
       {state.isHost && (
         <HostConfigPanel

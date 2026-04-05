@@ -6,7 +6,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket) {
   socket.on('room:create', ({ displayName }) => {
     const room = roomManager.createRoom(socket.id, displayName);
     socket.join(room.code);
-    socket.emit('room:created', { roomCode: room.code, playerId: socket.id });
+    socket.emit('room:created', { roomCode: room.code, playerId: socket.id, config: room.config });
     logger.info(`Room ${room.code} created by ${displayName}`);
   });
 
@@ -19,7 +19,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket) {
     socket.join(roomCode.toUpperCase());
     const room = roomManager.getRoom(roomCode.toUpperCase())!;
     const players = Array.from(room.players.values());
-    socket.emit('room:joined', { roomCode: room.code, playerId: socket.id, players });
+    socket.emit('room:joined', { roomCode: room.code, playerId: socket.id, players, config: room.config });
     socket.to(room.code).emit('room:player-joined', { player: room.players.get(socket.id)! });
     logger.info(`${displayName} joined room ${room.code}`);
   });

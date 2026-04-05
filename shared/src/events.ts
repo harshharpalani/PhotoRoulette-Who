@@ -18,12 +18,13 @@ export interface ClientToServerEvents {
 // ── Server → Client Events ──
 
 export interface ServerToClientEvents {
-  'room:created': (data: { roomCode: string; playerId: string }) => void;
-  'room:joined': (data: { roomCode: string; playerId: string; players: Player[] }) => void;
+  'room:created': (data: { roomCode: string; playerId: string; config: GameConfig }) => void;
+  'room:joined': (data: { roomCode: string; playerId: string; players: Player[]; config: GameConfig }) => void;
   'room:player-joined': (data: { player: Player }) => void;
   'room:player-left': (data: { playerId: string }) => void;
   'room:error': (data: { message: string }) => void;
   'lobby:player-ready': (data: { playerId: string }) => void;
+  'lobby:media-reset': () => void;
   'lobby:config-updated': (data: { config: GameConfig }) => void;
   'game:starting': (data: { config: GameConfig; roundCount: number }) => void;
   'game:countdown': (data: { count: number }) => void;

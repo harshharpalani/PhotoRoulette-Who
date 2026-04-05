@@ -1,77 +1,150 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { MEDIA_SELECTION_COUNT } from '@photoroulette/shared';
-import type { MediaManifestItem } from '@photoroulette/shared';
+import type { MediaManifestItem, MediaScope } from '@photoroulette/shared';
+import {
+  getMediaService,
+  isNativeIOSMedia,
+  type MediaPermissionState,
+  type MediaPreviewItem,
+  type MediaSelectionResult,
+} from '../media/mediaService.js';
 
-interface MediaFile {
-  file: File;
-  type: 'image' | 'video';
-  url: string;
+export interface ApprovedMediaPayload {
+  manifest: MediaManifestItem[];
+  getFileBuffer: (index: number) => Promise<ArrayBuffer>;
 }
 
-export function useMediaFiles() {
-  const allFilesRef = useRef<File[]>([]);
-  const [selectedFiles, setSelectedFiles] = useState<MediaFile[]>([]);
-  const [approvedFiles, setApprovedFiles] = useState<MediaFile[]>([]);
-  const [isApproved, setIsApproved] = useState(false);
+function toApprovedPayload(
+  result: MediaSelectionResult,
+  getFileBuffer: (index: number) => Promise<ArrayBuffer>,
+): ApprovedMediaPayload {
+  return {
+    manifest: result.manifest,
+    getFileBuffer,
+  };
+}
 
-  const handleFilesSelected = useCallback((files: FileList) => {
-    const mediaFiles = Array.from(files).filter(
-      (f) => f.type.startsWith('image/') || f.type.startsWith('video/')
-    );
-    allFilesRef.current = mediaFiles;
-    pickRandom(mediaFiles);
-  }, []);
+export function useMediaFiles(mediaScope: MediaScope) {
+  const mediaServiceRef = useRef(getMediaService());
+  const mediaService = mediaServiceRef.current;
+  const isNativeIOS = isNativeIOSMedia();
+  const [selectedFiles, setSelectedFiles] = useState<MediaPreviewItem[]>([]);
+  const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalFiles, setTotalFiles] = useState(0);
+  const [warning, setWarning] = useState('');
+  const [error, setError] = useState('');
+  const [permissionState, setPermissionState] = useState<MediaPermissionState>(mediaService.getPermissionState());
 
-  const pickRandom = useCallback((files?: File[]) => {
-    const source = files || allFilesRef.current;
-    if (source.length === 0) return;
+  useEffect(() => {
+    return mediaService.subscribePermission((state) => {
+      setPermissionState(state);
+    });
+  }, [mediaService]);
 
-    const count = Math.min(MEDIA_SELECTION_COUNT, source.length);
-    const shuffled = [...source].sort(() => Math.random() - 0.5);
-    const picked = shuffled.slice(0, count);
+  useEffect(() => {
+    // Keep UI in sync with launch-time permission checks.
+    void mediaService.checkOrRequestLaunchPermission();
+  }, [mediaService]);
 
-    // Revoke old URLs
-    selectedFiles.forEach((f) => URL.revokeObjectURL(f.url));
+  useEffect(() => {
+    mediaService.clearSelection();
+    setSelectedFiles([]);
+    setIsReady(false);
+    setTotalFiles(0);
+    setWarning('');
+    setError('');
+  }, [mediaScope, mediaService]);
 
-    const newSelection = picked.map((file) => ({
-      file,
-      type: (file.type.startsWith('video/') ? 'video' : 'image') as 'image' | 'video',
-      url: URL.createObjectURL(file),
+  useEffect(() => {
+    return () => {
+      mediaService.clearSelection();
+    };
+  }, [mediaService]);
+
+  const applySelection = useCallback(async (
+    selector: () => Promise<MediaSelectionResult | null>,
+  ): Promise<ApprovedMediaPayload | null> => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const result = await selector();
+      if (!result) {
+        setSelectedFiles([]);
+        setTotalFiles(0);
+        setWarning('');
+        setIsReady(false);
+        if (isNativeIOS && permissionState !== 'granted') {
+          setError('Full photo access is required before media can be selected.');
+        } else {
+          setError('No eligible media found.');
+        }
+        return null;
+      }
+
+      setSelectedFiles(result.previews);
+      setTotalFiles(result.totalAvailable);
+      setWarning(result.warning || '');
+      setIsReady(true);
+      return toApprovedPayload(result, (index) => mediaService.getFileBuffer(index));
+    } catch (err) {
+      setIsReady(false);
+      setSelectedFiles([]);
+      setTotalFiles(0);
+      setWarning('');
+      setError(err instanceof Error ? err.message : 'Failed to load media');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isNativeIOS, mediaService, permissionState]);
+
+  const handleFilesSelected = useCallback(async (files: FileList): Promise<ApprovedMediaPayload | null> => {
+    if (!mediaService.setWebInputFiles) return null;
+    mediaService.setWebInputFiles(files);
+    return applySelection(() => mediaService.loadRandomSelection({
+      count: MEDIA_SELECTION_COUNT,
+      scope: mediaScope,
     }));
-    setSelectedFiles(newSelection);
-    setIsApproved(false);
-  }, [selectedFiles]);
+  }, [applySelection, mediaScope, mediaService]);
 
-  const approve = useCallback(() => {
-    setApprovedFiles(selectedFiles);
-    setIsApproved(true);
-  }, [selectedFiles]);
-
-  const reroll = useCallback(() => {
-    pickRandom();
-  }, [pickRandom]);
-
-  const getManifest = useCallback((): MediaManifestItem[] => {
-    return approvedFiles.map((f, i) => ({
-      index: i,
-      type: f.type,
-      name: f.file.name,
+  const loadFromCameraRoll = useCallback(async (): Promise<ApprovedMediaPayload | null> => {
+    return applySelection(() => mediaService.loadRandomSelection({
+      count: MEDIA_SELECTION_COUNT,
+      scope: mediaScope,
     }));
-  }, [approvedFiles]);
+  }, [applySelection, mediaScope, mediaService]);
 
-  const getFileBuffer = useCallback(async (index: number): Promise<ArrayBuffer> => {
-    return approvedFiles[index].file.arrayBuffer();
-  }, [approvedFiles]);
+  const reroll = useCallback(async (): Promise<ApprovedMediaPayload | null> => {
+    return applySelection(() => mediaService.reroll());
+  }, [applySelection, mediaService]);
+
+  const retryPermission = useCallback(async (): Promise<MediaPermissionState> => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const state = await mediaService.ensurePermissionBeforeMediaUse();
+      if (state !== 'granted') {
+        setError('Full photo access is required to continue.');
+      }
+      return state;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [mediaService]);
 
   return {
     selectedFiles,
-    approvedFiles,
-    isApproved,
+    isReady,
+    isLoading,
+    totalFiles,
+    warning,
+    error,
+    permissionState,
+    isNativeIOS,
     handleFilesSelected,
-    approve,
+    loadFromCameraRoll,
     reroll,
-    getManifest,
-    getFileBuffer,
-    totalFiles: allFilesRef.current.length,
+    retryPermission,
   };
 }

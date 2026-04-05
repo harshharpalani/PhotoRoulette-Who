@@ -6,6 +6,11 @@ export enum RevealStyle {
   RANDOM = 'random',
 }
 
+export enum MediaScope {
+  PHOTOS_ONLY = 'photos_only',
+  PHOTOS_AND_VIDEOS = 'photos_and_videos',
+}
+
 export enum GameState {
   WAITING_FOR_PLAYERS = 'waiting_for_players',
   LOBBY = 'lobby',
@@ -27,6 +32,7 @@ export interface GameConfig {
   revealStyle: RevealStyle;
   revealDuration: number; // seconds, 5-10
   numRounds: number;
+  mediaScope: MediaScope;
 }
 
 export interface MediaManifestItem {

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getSocket } from '../socket.js';
 import { useGameState } from '../state/GameContext.js';
@@ -9,6 +9,7 @@ import PlayerGuessBar from '../components/PlayerGuessBar.js';
 import RoundTimer from '../components/RoundTimer.js';
 import ScoreBoard from '../components/ScoreBoard.js';
 import VoteEndModal from '../components/VoteEndModal.js';
+import { getMediaUploadGetter } from '../media/mediaUploadStore.js';
 
 export default function GamePage() {
   const { code } = useParams<{ code: string }>();
@@ -16,7 +17,6 @@ export default function GamePage() {
   const navigate = useNavigate();
   const { getHighResTimestamp } = useTimingSync();
   const [hasVotedEnd, setHasVotedEnd] = useState(false);
-  const getFileBufferRef = useRef<((index: number) => Promise<ArrayBuffer>) | null>(null);
 
   // Listen for game countdown
   useSocketEvent('game:countdown', ({ count }) => {
@@ -38,9 +38,15 @@ export default function GamePage() {
 
   // Handle media request (in case player is asked to upload during game)
   useSocketEvent('media:request', (async ({ roundIndex }: { roundIndex: number }) => {
-    if (getFileBufferRef.current) {
-      const buffer = await getFileBufferRef.current(roundIndex);
-      getSocket().emit('media:upload', { roundIndex }, buffer);
+    const mediaUploadGetter = getMediaUploadGetter();
+    if (mediaUploadGetter) {
+      try {
+        const buffer = await mediaUploadGetter(roundIndex);
+        getSocket().emit('media:upload', { roundIndex }, buffer);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to access media';
+        window.alert(message);
+      }
     }
   }) as any);
 

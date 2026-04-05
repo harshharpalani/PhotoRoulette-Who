@@ -2,12 +2,14 @@ import type { TypedServer } from '../socket/index.js';
 import type { Player, GameConfig, MediaManifestItem, GuessResult, ScoreEntry } from '@photoroulette/shared';
 import {
   GameState,
+  MediaScope,
   RevealStyle,
   ROOM_CODE_LENGTH,
   MAX_PLAYERS,
   MIN_PLAYERS,
   DEFAULT_REVEAL_DURATION,
   DEFAULT_NUM_ROUNDS,
+  DEFAULT_MEDIA_SCOPE,
   ROOM_CLEANUP_DELAY_MS,
   ROUND_RESULT_DISPLAY_SECONDS,
 } from '@photoroulette/shared';
@@ -57,6 +59,7 @@ class RoomManager {
         revealStyle: RevealStyle.GRADUAL_UNBLUR,
         revealDuration: DEFAULT_REVEAL_DURATION,
         numRounds: DEFAULT_NUM_ROUNDS,
+        mediaScope: DEFAULT_MEDIA_SCOPE,
       },
       stateMachine: new GameStateMachine(),
       roundEngine: new RoundEngine(),
@@ -171,6 +174,25 @@ class RoomManager {
     const room = this.getRoomBySocket(socketId);
     if (!room) return;
     room.mediaManifests.set(socketId, manifest);
+  }
+
+  isManifestAllowed(roomCode: string, manifest: MediaManifestItem[]): boolean {
+    const room = this.rooms.get(roomCode);
+    if (!room) return false;
+    if (room.config.mediaScope === MediaScope.PHOTOS_ONLY) {
+      return manifest.every((item) => item.type === 'image');
+    }
+    return true;
+  }
+
+  resetMediaForRoom(roomCode: string) {
+    const room = this.rooms.get(roomCode);
+    if (!room) return;
+    room.mediaManifests.clear();
+    for (const player of room.players.values()) {
+      player.isMediaReady = false;
+      player.mediaCount = 0;
+    }
   }
 
   startGame(roomCode: string, io: TypedServer) {

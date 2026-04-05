@@ -1,0 +1,59 @@
+PODS:
+  - Capacitor (7.6.1):
+    - CapacitorCordova
+  - CapacitorApp (7.1.2):
+    - Capacitor
+  - CapacitorCamera (7.0.5):
+    - Capacitor
+  - CapacitorCommunityMedia (8.0.1):
+    - Capacitor
+    - SDWebImage
+  - CapacitorCordova (7.6.1)
+  - CapacitorFilesystem (7.1.8):
+    - Capacitor
+    - IONFilesystemLib (~> 1.1.1)
+  - IONFilesystemLib (1.1.2)
+  - SDWebImage (5.21.7):
+    - SDWebImage/Core (= 5.21.7)
+  - SDWebImage/Core (5.21.7)
+
+DEPENDENCIES:
+  - "Capacitor (from `../../../node_modules/.pnpm/@capacitor+ios@7.6.1_@capacitor+core@7.6.1/node_modules/@capacitor/ios`)"
+  - "CapacitorApp (from `../../../node_modules/.pnpm/@capacitor+app@7.1.2_@capacitor+core@7.6.1/node_modules/@capacitor/app`)"
+  - "CapacitorCamera (from `../../../node_modules/.pnpm/@capacitor+camera@7.0.5_@capacitor+core@7.6.1/node_modules/@capacitor/camera`)"
+  - "CapacitorCommunityMedia (from `../../../node_modules/.pnpm/@capacitor-community+media@8.0.1_@capacitor+core@7.6.1/node_modules/@capacitor-community/media`)"
+  - "CapacitorCordova (from `../../../node_modules/.pnpm/@capacitor+ios@7.6.1_@capacitor+core@7.6.1/node_modules/@capacitor/ios`)"
+  - "CapacitorFilesystem (from `../../../node_modules/.pnpm/@capacitor+filesystem@7.1.8_@capacitor+core@7.6.1/node_modules/@capacitor/filesystem`)"
+
+SPEC REPOS:
+  trunk:
+    - IONFilesystemLib
+    - SDWebImage
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../../node_modules/.pnpm/@capacitor+ios@7.6.1_@capacitor+core@7.6.1/node_modules/@capacitor/ios"
+  CapacitorApp:
+    :path: "../../../node_modules/.pnpm/@capacitor+app@7.1.2_@capacitor+core@7.6.1/node_modules/@capacitor/app"
+  CapacitorCamera:
+    :path: "../../../node_modules/.pnpm/@capacitor+camera@7.0.5_@capacitor+core@7.6.1/node_modules/@capacitor/camera"
+  CapacitorCommunityMedia:
+    :path: "../../../node_modules/.pnpm/@capacitor-community+media@8.0.1_@capacitor+core@7.6.1/node_modules/@capacitor-community/media"
+  CapacitorCordova:
+    :path: "../../../node_modules/.pnpm/@capacitor+ios@7.6.1_@capacitor+core@7.6.1/node_modules/@capacitor/ios"
+  CapacitorFilesystem:
+    :path: "../../../node_modules/.pnpm/@capacitor+filesystem@7.1.8_@capacitor+core@7.6.1/node_modules/@capacitor/filesystem"
+
+SPEC CHECKSUMS:
+  Capacitor: b8dd0e1151c953171b0e02d04aa57f3389edcd97
+  CapacitorApp: f01a913211780e0718dae9750442c3e23f96e106
+  CapacitorCamera: 9e952270be355797f769aa835bb7643a96c871fe
+  CapacitorCommunityMedia: d1538b56a3303298e7cf45a18b11e624fbcbdc8e
+  CapacitorCordova: 6ab7337f25a2c9ce7a3fdc2f249c480f447853e0
+  CapacitorFilesystem: c63fc54df41e5a6761785a7f3c49dc696c22e296
+  IONFilesystemLib: 21a63377696b2d8fab5632ecfb7d2ac67bddb68a
+  SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
+
+PODFILE CHECKSUM: fd904b04214bde0cf1662adb2e1a67aa70724ff1
+
+COCOAPODS: 1.16.2

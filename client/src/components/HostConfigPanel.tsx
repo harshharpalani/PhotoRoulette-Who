@@ -1,4 +1,4 @@
-import { RevealStyle, MIN_REVEAL_DURATION, MAX_REVEAL_DURATION } from '@photoroulette/shared';
+import { RevealStyle, MediaScope, MIN_REVEAL_DURATION, MAX_REVEAL_DURATION } from '@photoroulette/shared';
 import type { GameConfig } from '@photoroulette/shared';
 
 interface HostConfigPanelProps {
@@ -14,6 +14,11 @@ const REVEAL_STYLE_LABELS: Record<RevealStyle, string> = {
   [RevealStyle.PIXELATED_TO_CLEAR]: 'Pixelated to Clear',
   [RevealStyle.IMMEDIATE]: 'Immediate',
   [RevealStyle.RANDOM]: 'Random (Mix)',
+};
+
+const MEDIA_SCOPE_LABELS: Record<MediaScope, string> = {
+  [MediaScope.PHOTOS_ONLY]: 'Photos only',
+  [MediaScope.PHOTOS_AND_VIDEOS]: 'Photos + videos',
 };
 
 export default function HostConfigPanel({ config, onConfigChange, canStart, onStart }: HostConfigPanelProps) {
@@ -54,6 +59,19 @@ export default function HostConfigPanel({ config, onConfigChange, canStart, onSt
           value={config.numRounds}
           onChange={(e) => onConfigChange({ numRounds: parseInt(e.target.value) })}
         />
+      </div>
+
+      <div className="config-row">
+        <label>Media Type</label>
+        <select
+          value={config.mediaScope}
+          onChange={(e) => onConfigChange({ mediaScope: e.target.value as MediaScope })}
+          className="input"
+        >
+          {Object.entries(MEDIA_SCOPE_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
       </div>
 
       <button className="btn btn-primary" onClick={onStart} disabled={!canStart}>

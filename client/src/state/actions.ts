@@ -7,6 +7,7 @@ export type GameAction =
   | { type: 'ADD_PLAYER'; player: Player }
   | { type: 'REMOVE_PLAYER'; playerId: string }
   | { type: 'PLAYER_READY'; playerId: string }
+  | { type: 'RESET_MEDIA_READY_ALL' }
   | { type: 'UPDATE_CONFIG'; config: GameConfig }
   | { type: 'SET_PHASE'; phase: GamePhase }
   | { type: 'START_ROUND'; roundNumber: number; revealStyle: RevealStyle; revealDuration: number; mediaType: 'image' | 'video' }

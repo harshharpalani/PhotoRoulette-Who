@@ -1,5 +1,5 @@
 import type { GameConfig, GuessResult, Player, ScoreEntry, RevealStyle } from '@photoroulette/shared';
-import { DEFAULT_REVEAL_DURATION, DEFAULT_NUM_ROUNDS, RevealStyle as RS } from '@photoroulette/shared';
+import { DEFAULT_REVEAL_DURATION, DEFAULT_NUM_ROUNDS, DEFAULT_MEDIA_SCOPE, RevealStyle as RS } from '@photoroulette/shared';
 import type { GameAction, GamePhase } from './actions.js';
 
 export interface GameState {
@@ -43,6 +43,7 @@ export const initialGameState: GameState = {
     revealStyle: RS.GRADUAL_UNBLUR,
     revealDuration: DEFAULT_REVEAL_DURATION,
     numRounds: DEFAULT_NUM_ROUNDS,
+    mediaScope: DEFAULT_MEDIA_SCOPE,
   },
   phase: 'home',
   countdown: 0,
@@ -68,6 +69,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         players: state.players.map((p) => (p.id === action.playerId ? { ...p, isMediaReady: true } : p)),
+      };
+    case 'RESET_MEDIA_READY_ALL':
+      return {
+        ...state,
+        players: state.players.map((p) => ({ ...p, isMediaReady: false, mediaCount: 0 })),
       };
     case 'UPDATE_CONFIG':
       return { ...state, gameConfig: action.config };

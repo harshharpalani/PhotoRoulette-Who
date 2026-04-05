@@ -8,6 +8,10 @@ export function registerLobbyHandlers(io: TypedServer, socket: TypedSocket) {
     if (!room) return;
     const player = room.players.get(socket.id);
     if (!player) return;
+    if (!roomManager.isManifestAllowed(room.code, manifest)) {
+      socket.emit('room:error', { message: 'This room is currently set to Photos only' });
+      return;
+    }
 
     player.isMediaReady = true;
     player.mediaCount = mediaCount;
@@ -21,7 +25,12 @@ export function registerLobbyHandlers(io: TypedServer, socket: TypedSocket) {
     const room = roomManager.getRoomBySocket(socket.id);
     if (!room || room.hostSocketId !== socket.id) return;
 
+    const didChangeMediaScope = config.mediaScope && config.mediaScope !== room.config.mediaScope;
     Object.assign(room.config, config);
+    if (didChangeMediaScope) {
+      roomManager.resetMediaForRoom(room.code);
+      io.to(room.code).emit('lobby:media-reset');
+    }
     io.to(room.code).emit('lobby:config-updated', { config: room.config });
   });
 
@@ -35,7 +44,7 @@ export function registerLobbyHandlers(io: TypedServer, socket: TypedSocket) {
       return;
     }
     if (!players.every((p) => p.isMediaReady)) {
-      socket.emit('room:error', { message: 'Not all players have approved their media' });
+      socket.emit('room:error', { message: 'Not all players have selected media yet' });
       return;
     }
 
