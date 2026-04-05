@@ -1,0 +1,9 @@
+[build]
+builder = "nixpacks"
+buildCommand = "pnpm install && pnpm --filter shared build && pnpm --filter client build && pnpm --filter server build"
+
+[deploy]
+startCommand = "node server/dist/index.js"
+healthcheckPath = "/health"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
