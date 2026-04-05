@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command' | grep -qE 'git\\s+push\\s.*main' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"You just pushed to main. You MUST now update changes.md: append a new dated entry with a high-level description of the changes that were pushed and the key files affected. Then commit and push changes.md to main.\"}}' || echo '{}'",
+            "if": "Bash(git push:*)"
+          }
+        ]
+      }
+    ]
+  }
+}
